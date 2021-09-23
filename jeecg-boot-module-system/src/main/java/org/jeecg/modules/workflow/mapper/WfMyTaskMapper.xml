@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.workflow.mapper.WfMyTaskMapper">
+
+    <resultMap id="rsMap" type="org.jeecg.modules.workflow.entity.vo.MyTaskVO">
+        <result column="BUSINESS_KEY_"  property="businessTitle" />
+        <result column="PROC_DEF_ID_"  property="processDefinitionId" />
+        <result column="ID_"  property="taskId" />
+        <result column="NAME_"  property="processName" />
+        <result column="PROC_INST_ID_"  property="processInstanceId" />
+        <result column="START_USER_ID_"  property="startUserId" />
+        <result column="CREATE_TIME_"  property="startTime" />
+        <result column="name1"  property="currentTask" />
+<!--        <result column=""  property="claim" />-->
+    </resultMap>
+
+    <select id="queryMyTaskPage" resultMap="rsMap">
+        select
+            act_hi_procinst.BUSINESS_KEY_,
+            act_ru_task.PROC_DEF_ID_,
+            act_ru_task.ID_,
+            act_re_procdef.NAME_,
+            act_ru_task.PROC_INST_ID_,
+            act_hi_procinst.START_USER_ID_,
+            act_ru_task.CREATE_TIME_,
+            act_ru_task.NAME_ as name1
+        from act_ru_task
+             left join act_hi_procinst
+                       on act_hi_procinst.ID_ = act_ru_task.PROC_INST_ID_
+             left join  act_re_procdef
+                       on act_ru_task.PROC_DEF_ID_= act_re_procdef.ID_
+                and act_hi_procinst.TENANT_ID_ = act_re_procdef.TENANT_ID_
+            where  act_ru_task.ASSIGNEE_ = #{assignee}
+            <if test="procInstName != '' and procInstName != null" >
+                and act_re_procdef.NAME_ like CONCAT('%',#{procInstName},'%')
+            </if>
+            <if test="startUserId != '' and startUserId != null">
+                and act_hi_procinst.START_USER_ID_ like CONCAT('%',#{startUserId},'%')
+            </if>
+        ORDER BY act_ru_task.CREATE_TIME_ DESC
+        limit #{firstResult},#{pageSize};
+    </select>
+    <select id="queryMyTask" resultMap="rsMap">
+        select
+        act_hi_procinst.BUSINESS_KEY_,
+        act_ru_task.PROC_DEF_ID_,
+        act_ru_task.ID_,
+        act_re_procdef.NAME_,
+        act_ru_task.PROC_INST_ID_,
+        act_hi_procinst.START_USER_ID_,
+        act_ru_task.CREATE_TIME_,
+        act_ru_task.NAME_ as name1
+        from act_ru_task
+        left join act_hi_procinst
+        on act_hi_procinst.ID_ = act_ru_task.PROC_INST_ID_
+        left join act_re_procdef
+        on act_ru_task.PROC_DEF_ID_= act_re_procdef.ID_
+        and act_hi_procinst.TENANT_ID_ = act_re_procdef.TENANT_ID_
+        where  act_ru_task.ASSIGNEE_ = #{assignee}
+        <if test="procInstName != '' and procInstName != null" >
+            and act_re_procdef.NAME_ like CONCAT('%',#{procInstName},'%')
+        </if>
+        <if test="startUserId != '' and startUserId != null">
+            and act_hi_procinst.START_USER_ID_ like CONCAT('%',#{startUserId},'%')
+        </if>
+        ORDER BY act_ru_task.CREATE_TIME_ DESC
+    </select>
+    <select id="queryGroupTask" resultType="Integer">
+        SELECT count(*)
+        from act_ru_task
+                 LEFT JOIN act_ru_identitylink
+                           on act_ru_task.ID_ = act_ru_identitylink.TASK_ID_ AND act_ru_task.TENANT_ID_ = act_ru_identitylink.TENANT_ID_
+        where act_ru_identitylink.TASK_ID_ = #{taskId}
+    </select>
+
+
+</mapper>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.jeecg.modules.workflow.mapper.WfActIdUserMapper">
+
+    <select id="updateById"  parameterType="org.jeecg.modules.workflow.entity.vo.UserDTO">
+        update act_id_user set FIRST_ = #{firstName}, LAST_ = #{lastName},EMAIL_ = #{email} where ID_ = #{userId}
+    </select>
+
+</mapper>

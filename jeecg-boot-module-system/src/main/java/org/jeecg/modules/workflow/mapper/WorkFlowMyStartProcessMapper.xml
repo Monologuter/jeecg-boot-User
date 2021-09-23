@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.jeecg.modules.workflow.mapper.WorkFlowMyStartProcessMapper">
+
+    <resultMap id="ProcessDefinition" type="org.jeecg.modules.workflow.entity.vo.HistoryProcessVO">
+        <id column="ID_" property="taskId"/>
+        <result column="taskName" property="taskName"/>
+        <result column="BUSINESS_KEY_" property="businessTitle"/>
+        <result column="PROC_INST_ID_" property="processInstanceId"/>
+        <result column="PROC_DEF_ID_" property="processDefinitionId"/>
+        <result column="NAME_" property="name"/>
+        <result column="START_USER_ID_" property="startUserId"/>
+        <result column="START_TIME_" property="startTime"/>
+        <result column="END_TIME_" property="endTime"/>
+        <result column="DURATION_" property="duration"/>
+        <result column="STATE_" property="state"/>
+    </resultMap>
+
+    <select id="myStartProcessList" resultMap="ProcessDefinition">
+        SELECT DISTINCT
+            ART.ID_,
+            ART.NAME_ taskName,
+            AHP.BUSINESS_KEY_,
+            AHP.PROC_INST_ID_ ,
+            AHP.PROC_DEF_ID_ ,
+            ARP.NAME_,
+            AHP.START_USER_ID_,
+            AHP.START_TIME_ ,
+            AHP.END_TIME_ ,
+            AHP.DURATION_,
+            AHP.STATE_
+        FROM
+                act_hi_procinst AHP
+            INNER JOIN
+                act_re_procdef ARP
+            ON
+                AHP.PROC_DEF_ID_=ARP.ID_
+        INNER JOIN
+            act_ru_task ART
+        ON
+            AHP.ID_=ART.PROC_INST_ID_
+
+        <if test="startUserId != null">
+            AND AHP.START_USER_ID_=#{startUserId}
+        </if>
+
+        <if test="proDefName != null">
+            AND ARP.NAME_ LIKE concat(#{proDefName},'%')
+        </if>
+
+        <if test="proDefKey != null">
+            AND AHP.BUSINESS_KEY_ LIKE concat(#{proDefKey},'%')
+        </if>
+
+        ORDER BY AHP.START_TIME_ DESC
+    </select>
+
+    <select id="myHistoricalStartProcessList" resultMap="ProcessDefinition">
+        SELECT DISTINCT
+            AHT.ID_,
+            AHT.NAME_ taskName,
+            AHP.BUSINESS_KEY_,
+            AHP.PROC_INST_ID_ ,
+            AHP.PROC_DEF_ID_ ,
+            ARP.NAME_,
+            AHP.START_USER_ID_,
+            AHP.START_TIME_ ,
+            AHP.END_TIME_ ,
+            AHP.DURATION_,
+            AHP.STATE_
+        FROM
+                act_hi_procinst AHP
+            INNER JOIN
+                act_re_procdef ARP
+            ON
+                AHP.PROC_DEF_ID_=ARP.ID_
+        INNER JOIN
+            act_hi_taskinst AHT
+        ON
+            AHP.ID_=AHT.PROC_INST_ID_
+        AND
+                (AHT.END_TIME_=AHP.END_TIME_
+            OR
+                (AHT.END_TIME_ IS NULL AND AHP.END_TIME_ IS NULL))
+        <if test="startUserId != null">
+            AND AHP.START_USER_ID_=#{startUserId}
+        </if>
+
+        <if test="proDefName != null">
+            AND ARP.NAME_ LIKE concat(#{proDefName},'%')
+        </if>
+
+        <if test="proDefKey != null">
+            AND AHP.BUSINESS_KEY_  LIKE concat(#{proDefKey},'%')
+        </if>
+        <if test="proState != null">
+            AND AHP.STATE_ LIKE concat(#{proState},'%')
+        </if>
+        ORDER BY AHP.START_TIME_ DESC
+    </select>
+
+</mapper>

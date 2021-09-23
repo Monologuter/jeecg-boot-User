@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.form.mapper.FormDataMapper">
+
+    <select id="getFormDataList" resultType="org.jeecg.modules.form.entity.FormDataDO">
+        select id, form_id, row_data
+        from fd_form_data
+        where form_id = #{formId}
+        <foreach collection="roleRules" item="rule" separator="and" open="and">
+            row_data #>> '{
+            <foreach collection="rule.ruleKey" item="key" separator=",">
+                ${key}
+            </foreach>
+            }' like #{rule.ruleValue}
+        </foreach>
+        order by
+        <choose>
+            <when test="!orderBy.isEmpty()">
+                row_data #> '{
+                <foreach item="item" collection="orderBy" separator=",">
+                    ${item}
+                </foreach>}'
+            </when>
+            <otherwise>
+                create_time
+            </otherwise>
+        </choose>
+        <if test="isDesc">desc</if>
+    </select>
+
+    <select id="getFormDataCount" resultType="java.lang.Long">
+        select count(*) from fd_form_data
+        where form_id = #{formId}
+        <foreach collection="rules" item="rule" separator="and" open="and">
+            row_data #>> '{
+            <foreach collection="rule.ruleKey" item="key" separator=",">
+                ${key}
+            </foreach>
+            }' = #{rule.ruleValue}
+        </foreach>
+    </select>
+
+    <select id="getGraphData" resultType="Map">
+        select
+            (select sum(cast(row_data #>> '{number_1630651053835}' as integer))
+             from fd_form_data
+             where form_id = '1433680528280088577') 总人数
+             , (select count(*) f
+                from fd_form_data
+                where row_data ->>  'jianli_state' = '待入职' and form_id='1435870381944061954') 通过人数;
+        </select>
+
+</mapper>

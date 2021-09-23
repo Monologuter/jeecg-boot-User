@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.form.mapper.FormMapper">
+
+    <select id="getFormSysPermissionByFormId" resultType="org.jeecg.modules.form.entity.FormSysPermissionDO">
+        select id, form_id, sys_permission_id
+        from fd_form_sys_permission
+        where form_id = #{formId}
+    </select>
+
+</mapper>

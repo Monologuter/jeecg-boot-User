@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.system.mapper.SysRoleApplicationMapper">
+    <!-- 批量删除应用与角色关系-->
+    <update id="deleteBathRoleApplicationRelation">
+        delete from sys_role_application
+        where application_id in
+        <foreach item="id" collection="applicationIdArray" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+</mapper>

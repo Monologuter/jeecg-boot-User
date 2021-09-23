@@ -1,0 +1,392 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.system.mapper.SysPermissionMapper">
+
+
+    <resultMap id="TreeModel" type="org.jeecg.modules.system.model.TreeModel">
+        <result column="id" property="key" jdbcType="VARCHAR"/>
+        <result column="name" property="title" jdbcType="VARCHAR"/>
+        <result column="icon" property="icon" jdbcType="VARCHAR"/>
+        <result column="parent_id" property="parentId" jdbcType="VARCHAR"/>
+        <result column="is_leaf" property="isLeaf" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 通过<resultMap>映射实体类属性名和表的字段名对应关系 -->
+    <resultMap id="SysPermission" type="org.jeecg.modules.system.entity.SysPermission">
+        <!-- result属性映射非匹配字段 -->
+        <result column="is_route" property="route"/>
+        <result column="is_leaf" property="leaf"/>
+    </resultMap>
+
+    <resultMap id="SysApplication" type="org.jeecg.modules.system.entity.SysApplication">
+        <result column="applicationName" property="application_name"/>
+        <result column="applicationCode" property="application_code"/>
+        <result column="createBy" property="create_by"/>
+        <result column="createTime" property="create_time"/>
+        <result column="updateBy" property="update_by"/>
+        <result column="updateTime" property="update_time"/>
+        <result column="avatarShape" property="avatar_shape"/>
+        <result column="avatarColor" property="avatar_color"/>
+        <result column="applicationType" property="application_type"/>
+    </resultMap>
+
+
+    <select id="queryListByParentId" parameterType="Object" resultMap="TreeModel">
+        SELECT
+        id
+        ,parent_id
+        ,name
+        ,icon
+        ,is_leaf
+        FROM sys_permission
+        WHERE 1=1
+        <choose>
+            <when test="parentId != null and parentId != ''">
+                AND parent_id = #{parentId,jdbcType=VARCHAR}
+            </when>
+            <otherwise>
+                AND parent_id is null
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 获取登录用户拥有的权限 -->
+    <select id="queryByUser" parameterType="Object" resultMap="SysPermission">
+        SELECT * FROM (
+        SELECT p.*
+        FROM sys_permission p
+        WHERE (exists(
+        select a.id from sys_role_permission a
+        join sys_role b on a.role_id = b.id
+        join sys_user_role c on c.role_id = b.id
+        join sys_user d on d.id = c.user_id
+        where p.id = a.permission_id AND d.username = #{username,jdbcType=VARCHAR}
+        )
+        or (p.url like '%:code' and p.url like '/online%' and p.hidden = 1)
+        or p.url = '/online')
+        and p.del_flag = 0
+        <!--update begin Author:lvdandan  Date:20200213 for：加入部门权限 -->
+        UNION
+        SELECT p.*
+        FROM sys_permission p
+        WHERE exists(
+        select a.id from sys_depart_role_permission a
+        join sys_depart_role b on a.role_id = b.id
+        join sys_depart_role_user c on c.drole_id = b.id
+        join sys_user d on d.id = c.user_id
+        where p.id = a.permission_id AND d.username = #{username,jdbcType=VARCHAR}
+        )
+        and p.del_flag = 0
+        <!--update end Author:lvdandan  Date:20200213 for：加入部门权限 -->
+        <!--            UNION-->
+        <!--            SELECT p.*-->
+        <!--            FROM  sys_permission p-->
+        <!--            WHERE exists(-->
+        <!--                select a.id from sys_application_permission a-->
+        <!--                join sys_role_application b on b.application_id = a.application_id-->
+        <!--                join sys_user_role c on c.role_id = b.role_id-->
+        <!--                join sys_user d on d.id = c.user_id-->
+        <!--                where p.id = a.permission_id AND d.username = #{username,jdbcType=VARCHAR}-->
+        <!--            )-->
+        <!--            and p.del_flag = 0-->
+        <!--            &lt;!&ndash;update end Author:lvdandan  Date:20200213 for：加入应用权限 &ndash;&gt;-->
+        ) h where h.create_ways = 1 order by h.sort_no ASC
+    </select>
+    <!-- 获取登录用户拥有的应用权限 -->
+    <select id="queryByUserApplication" parameterType="Object" resultMap="SysApplication">
+        select d.*
+        from sys_user a
+        join sys_user_role b on a.id = b.user_id
+        join sys_role_application c on b.role_id = c.role_id
+        join sys_application d on d.id = c.application_id
+        where a.username = #{username,jdbcType=VARCHAR}
+        and d.template = 0
+        UNION
+
+        select f.*
+        from sys_user e
+        join sys_application f on e.username = f.create_by
+        where e.username = #{username,jdbcType=VARCHAR}
+        and f.template = 0
+        union
+        select sa1.*
+        from sys_user su1
+        left join
+        sys_user_approle_application suaa
+        on
+        su1.id = suaa.user_id
+        LEFT JOIN
+        sys_application sa1
+        on
+        suaa.application_id = sa1.id
+        where su1.username = #{username,jdbcType=VARCHAR}
+        and sa1.template = 0
+        union
+        select sa2.*
+        from sys_user su2
+        LEFT JOIN
+        sys_user_depart sud
+        on
+        su2.id = sud.user_id
+        LEFT JOIN
+        sys_depart_approle_application sdaa
+        on
+        sud.dep_id = sdaa.depart_id
+        LEFT JOIN
+        sys_application sa2
+        on
+        sdaa.application_id = sa2.id
+        where su2.username = #{username,jdbcType=VARCHAR}
+        and sa2.template = 0
+        union
+        select sa3.*
+        from sys_user su3
+        LEFT JOIN
+        sys_user_role sur
+        on
+        su3.id = sur.user_id
+        LEFT JOIN
+        sys_role_approle_application sraa
+        on
+        sur.id = sraa.role_id
+        LEFT JOIN
+        sys_application sa3
+        on
+        sraa.application_id = sa3.id
+        where su3.username = #{username,jdbcType=VARCHAR}
+        and sa3.template = 0
+    </select>
+
+    <!-- 根据用户账号查询菜单权限 -->
+    <select id="queryCountByUsername" parameterType="Object" resultType="int">
+        select sum(cnt) from (
+        select count(*) as cnt
+        from sys_role_permission a
+        join sys_permission b on a.permission_id = b.id
+        join sys_role c on a.role_id = c.id
+        join sys_user_role d on d.role_id = c.id
+        join sys_user e on d.user_id = e.id
+        where e.username = #{username}
+        <if test="permission.id !=null and permission.id != ''">
+            and b.id = #{permission.id}
+        </if>
+        <if test="permission.url !=null and permission.url != ''">
+            and b.url = #{permission.url}
+        </if>
+        union all
+        select count(*) as cnt
+        from sys_permission z
+        join sys_depart_role_permission y on z.id = y.permission_id
+        join sys_depart_role x on y.role_id = x.id
+        join sys_depart_role_user w on w.drole_id = x.id
+        join sys_user v on w.user_id = v.id
+        where v.username = #{username}
+        <if test="permission.id !=null and permission.id != ''">
+            and z.id = #{permission.id}
+        </if>
+        <if test="permission.url !=null and permission.url != ''">
+            and z.url = #{permission.url}
+        </if>
+        ) temp
+    </select>
+
+
+    <resultMap id="sysApplicationWithPermissionId" type="org.jeecg.modules.system.model.SysApplicationWithPermissionId">
+        <id property="pid" column="permission_id"/>
+        <association property="sysApplication" autoMapping="true">
+            <id property="id" column="id"/>
+        </association>
+    </resultMap>
+
+
+    <select id="findApplicationsByPermissionId" resultMap="sysApplicationWithPermissionId">
+        select ap.permission_id, a.* from sys_application a
+        join sys_application_permission ap on a.id = ap.application_id
+        where ap.permission_id in
+        <foreach item="item" collection="pids"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+
+    <select id="queryPermissionsByUserId" parameterType="String"
+            resultMap="SysPermission">
+        SELECT sp.*
+        FROM sys_user su
+        LEFT JOIN sys_user_role sur ON su.id = sur.user_id
+        LEFT JOIN sys_role_permission srp ON sur.role_id = srp.role_id
+        LEFT JOIN sys_permission sp ON srp.permission_id = sp.id
+        WHERE su.id = #{userId}
+        and sp.create_ways = 0
+        and sp.id is not null
+        UNION
+        SELECT sp.*
+        FROM sys_user su
+        LEFT JOIN sys_user_depart sud ON su.id = sud.user_id
+        LEFT JOIN sys_depart_permission sdp ON sud.dep_id = sdp.depart_id
+        LEFT JOIN sys_permission sp ON sdp.permission_id = sp.id
+        WHERE su.id = #{userId}
+        and sp.create_ways = 0
+        and sp.id is not null;
+    </select>
+
+
+    <select id="findDescendants" resultMap="SysPermission">
+        with recursive descendants as (
+        select * from sys_permission where parent_id in
+        <foreach item="item" collection="ids"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        and del_flag = 0
+        union
+        select s.* from descendants d, sys_permission s where s.parent_id = d.id
+        )
+        select * from descendants
+    </select>
+
+    <select id="findDescendantsWithSelf" resultMap="SysPermission">
+        with recursive descendants as (
+        select * from sys_permission where id in
+        <foreach item="item" collection="ids"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        and del_flag = 0
+        union
+        select s.* from descendants d, sys_permission s where s.parent_id = d.id
+        )
+        select * from descendants
+    </select>
+
+    <select id="findAncestors" resultMap="SysPermission">
+        with recursive ancestors as (
+        select * from sys_permission where id in
+        (
+        select parent_id from sys_permission where id in
+        <foreach item="item" collection="ids"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        )
+        and del_flag = 0
+        union
+        select s.* from ancestors a, sys_permission s where s.id = a.parent_id
+        )select * from ancestors;
+    </select>
+
+    <select id="findRoots" resultMap="SysPermission">
+        with recursive ancestors as (
+        select * from sys_permission where id in
+        <foreach item="item" collection="ids"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        and del_flag = 0
+        union
+        select s.* from ancestors a, sys_permission s where s.id = a.parent_id
+        )select * from ancestors where parent_id is null;
+    </select>
+
+    <select id="findPermissionsByRoleIdAndApplicationId" resultMap="SysPermission">
+        <!--       descendants 指定application_id 所拥有的全部应用菜单-->
+        with recursive
+        specified_role_permission_id(id) as (
+        select permission_id from sys_role_permission where role_id = #{roleId}
+        ),
+        application_root_permission_id(id) as(
+        select permission_id from sys_application_permission where application_id = #{applicationId}
+        ),
+        descendants as (
+        select * from sys_permission s natural join application_root_permission_id
+        union
+        select s.* from descendants d, sys_permission s where s.parent_id = d.id
+        )
+        select * from descendants natural join specified_role_permission_id
+    </select>
+
+    <select id="findPermissionsByDepartIdIdAndApplicationId" resultMap="SysPermission">
+        <!--       descendants 指定application_id 所拥有的全部应用菜单-->
+        with recursive
+        specified_depart_permission_id(id) as (
+        select permission_id from sys_depart_permission where depart_id = #{departId}
+        ),
+        application_root_permission_id(id) as(
+        select permission_id from sys_application_permission where application_id = #{applicationId}
+        ),
+        descendants as (
+        select * from sys_permission natural join application_root_permission_id
+        union
+        select s.* from descendants d, sys_permission s where s.parent_id = d.id
+        )
+        select * from descendants natural join specified_depart_permission_id
+    </select>
+    <select id="findSysPermissionByRoleIdAndCreateWays" resultMap="SysPermission">
+        SELECT sp.*
+        FROM sys_role sr
+        LEFT JOIN
+        sys_role_permission srp
+        ON
+        sr.id = srp.role_id
+        LEFT JOIN
+        sys_permission sp
+        ON
+        srp.permission_id = sp.id
+        where sr.id = #{roleId}
+        AND sp.create_ways = #{createWays};
+    </select>
+
+    <select id="findSysPermissionByDepartIdAndCreateWays" resultMap="SysPermission">
+        SELECT sp.*
+        FROM sys_depart sd
+        LEFT JOIN
+        sys_depart_permission sdp
+        ON
+        sd.id = sdp.depart_id
+        LEFT JOIN
+        sys_permission sp
+        ON
+        sdp.permission_id = sp.id
+        where sd.id = #{departId}
+        AND sp.create_ways = #{createWays};
+    </select>
+
+
+    <update id="fullUpdateById">
+        UPDATE `sys_permission`
+        SET `parent_id`            = #{parentId},
+            `name`                 = #{name},
+            `url`                  = #{url},
+            `component`            = #{component},
+            `component_name`       = #{componentName},
+            `redirect`             = #{redirect},
+            `menu_type`            = #{menuType},
+            `perms`                = #{perms},
+            `perms_type`           = #{permsType},
+            `sort_no`              = #{sortNo},
+            `always_show`          = #{alwaysShow},
+            `icon`                 = #{icon},
+            `is_route`             = #{route},
+            `is_leaf`              = #{leaf},
+            `keep_alive`           = #{keepAlive},
+            `hidden`               = #{hidden},
+            `description`          = #{description},
+            `update_by`            = #{updateBy},
+            `update_time`          = #{updateTime},
+            `del_flag`             = #{delFlag},
+            `rule_flag`            = #{ruleFlag},
+            `status`               = #{status},
+            `internal_or_external` = #{internalOrExternal},
+            `create_ways`          = #{createWays}
+        WHERE `id` = #{id}
+    </update>
+
+
+    <select id="findChildren" resultMap="SysPermission">
+        select * from sys_permission p where parent_id = #{id} and del_flag = 0 order by sort_no, id
+    </select>
+    <select id="findAll" resultMap="SysPermission">
+        select * from sys_permission where del_flag = 0
+    </select>
+</mapper>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.system.mapper.SysRoleApproleApplicationMapper">
+    <select id="queryRoleByAppRoleAndApplication" parameterType="String" resultType="org.jeecg.modules.system.entity.SysRole">
+        select
+            sr.*
+        from
+            (
+                SELECT
+                    sraa.*
+                from
+                    sys_role_approle_application sraa
+                where
+                    sraa.application_id = #{applicationId}
+                  and
+                    sraa.approle_id = #{appRoleId}
+            ) s
+        left JOIN
+            sys_role sr
+        on
+            s.role_id = sr.id;
+    </select>
+</mapper>

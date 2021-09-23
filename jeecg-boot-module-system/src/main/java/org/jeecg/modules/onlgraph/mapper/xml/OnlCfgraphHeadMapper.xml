@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.onlgraph.mapper.OnlCfgraphHeadMapper">
+
+
+    <resultMap id="OnlCfgraphHeadList" type="org.jeecg.modules.onlgraph.vo.OnlCfgraphHeadVO">
+        <result column="id" property="id"/>
+        <result column="create_by" property="createBy"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_by" property="updateBy"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="sys_org_code" property="sysOrgCode"/>
+        <result column="graph_name" property="graphName"/>
+        <result column="graph_description" property="graphDescription"/>
+        <result column="db_key" property="dbKey"/>
+        <result column="graph_data_type" property="graphDataType"/>
+        <result column="graph_x" property="graphX"/>
+        <result column="graph_y" property="graphY"/>
+        <result column="graph_type" property="graphType"/>
+        <result column="graph_show_type" property="graphShowType"/>
+        <result column="graph_data" property="graphData"/>
+        <result column="graph_code" property="graphCode"/>
+        <result column="graph_permission_status" property="graphPermissionStatus"/>
+        <result column="form_id" property="formId"/>
+        <result column="del_flag" property="delFlag"/>
+        <collection property="onlCfgraphFields" ofType="org.jeecg.modules.onlgraph.entity.OnlCfgraphFieldDO">
+            <result column="f_id" property="id"/>
+            <result column="f_create_by" property="createBy"/>
+            <result column="f_create_time" property="createTime"/>
+            <result column="f_update_by" property="updateBy"/>
+            <result column="f_update_time" property="updateTime"/>
+            <result column="f_sys_org_code" property="sysOrgCode"/>
+            <result column="onl_cfgraph_id" property="onlCfgraphId"/>
+            <result column="db_field_text" property="dbFieldText"/>
+            <result column="order_num" property="orderNum"/>
+            <result column="db_field_type" property="dbFieldType"/>
+            <result column="db_field_displayable" property="dbFieldDisplayable"/>
+            <result column="db_field_sum" property="dbFieldSum"/>
+            <result column="db_field_inquire" property="dbFieldInquire"/>
+            <result column="db_field_code" property="dbFieldCode"/>
+            <result column="db_field_operate" property="dbFieldOperate"/>
+            <result column="db_field_name" property="dbFieldName"/>
+            <result column="db_field_inquire_type" property="dbFieldInquireType"/>
+        </collection>
+    </resultMap>
+
+    <!--    一对多查询图表配置-->
+    <select id="getOnlCfgraphHeads" resultMap="OnlCfgraphHeadList">
+    SELECT
+        h.id, h.create_by, h.create_time, h.update_by, h.update_time,
+        h.sys_org_code, h.graph_name, h.graph_description, h.db_key,h.graph_data_type,
+        h.graph_x, h.graph_y, h.graph_type, h.graph_show_type, h.graph_data, h.del_flag, h.form_id,
+        h.graph_code, h.graph_permission_status, f.id f_id, f.create_by f_create_by,
+        f.create_time f_create_time, f.update_by f_update_by,
+        f.update_time f_update_time, f.sys_org_code f_sys_org_code,
+        f.onl_cfgraph_id, f.db_field_text, f.order_num, f.db_field_type,
+        f.db_field_displayable, f.db_field_sum, f.db_field_inquire,
+        f.db_field_code, f.db_field_operate, f.db_field_name, f.db_field_inquire_type
+    FROM onl_cfgraph_head h
+    LEFT JOIN onl_cfgraph_field f ON h.id=f.onl_cfgraph_id
+    WHERE h.id=#{id}
+    ORDER BY f.order_num DESC
+    </select>
+
+    <!-- 执行select sql语句 -->
+    <select id="executeSeleteBySql" resultType="map" parameterType="java.lang.String">
+		${sql}
+	</select>
+
+</mapper>

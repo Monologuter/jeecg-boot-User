@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.system.mapper.SysRolePermissionMapper">
+    <!-- 查询系统角色授权叶子节点-->
+    <select id="queryLeafSysRolePermission" resultType="String">
+        SELECT
+         sp.id
+        FROM
+         sys_role_permission srp
+         LEFT JOIN sys_permission sp ON srp.permission_id = sp.id
+        WHERE
+         srp.role_id = #{roleId}
+         AND sp.is_leaf = 1;
+    </select>
+
+    <!-- 批量插入角色和菜单关系-->
+    <insert id="insertBatch">
+        insert into sys_role_permission (id, role_id, permission_id, operate_date, operate_ip) values
+        <foreach collection="list" separator="," item="item">
+            (#{item.id},#{item.roleId},#{item.permissionId}, #{item.operateDate}, #{item.operateIp})
+        </foreach>
+    </insert>
+
+    <select id="findSysRolePermissionByRoleIdAndCreateWays" resultType="org.jeecg.modules.system.entity.SysRolePermission">
+        select rp.* from sys_role_permission rp join sys_permission p
+        on rp.permission_id = p.id where role_id = #{roleId} and p.del_flag = 0
+        and p.create_ways = #{createWays}
+    </select>
+
+    <insert id="insertOrUpdateBatch">
+        replace into sys_role_permission(id, role_id, permission_id, operate_date, operate_ip) values
+        <foreach collection="list" separator="," item="item">
+            (#{item.id},#{item.roleId},#{item.permissionId}, #{item.operateDate}, #{item.operateIp})
+        </foreach>
+    </insert>
+
+
+</mapper>

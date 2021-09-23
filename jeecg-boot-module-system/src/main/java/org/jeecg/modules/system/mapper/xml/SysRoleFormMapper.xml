@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.system.mapper.SysRoleFormMapper">
+    <select id="queryFormDataDO" parameterType="String" resultType="org.jeecg.modules.form.entity.FormDataDO">
+        SELECT
+            ffd.*
+        FROM
+            sys_role sr
+                LEFT JOIN sys_role_form srf ON sr.id = srf.role_id
+                LEFT JOIN fd_form_data ffd ON srf.form_id = ffd.form_id
+        WHERE
+            sr.id = #{roleId}
+          AND srf.form_id = #{formId}
+          AND ffd.row_data LIKE CONCAT( '%"', #{formKey}, '":"', #{formValue}, '"%' );
+    </select>
+</mapper>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.message.mapper.SysMessageTemplateMapper">
+
+    <select id="findSysMessageTemplateLike"
+            resultType="org.jeecg.modules.message.entity.SysMessageTemplate">
+        SELECT * FROM sys_sms_template
+        <where>
+            <if test="sysMessageTemplate.templateCode != null">
+                <bind name="templateCodePattern" value="'%' + sysMessageTemplate.templateCode + '%'" />
+                template_code like #{templateCodePattern}
+            </if>
+            <if test="sysMessageTemplate.templateType != null">
+                <bind name="templateTypePattern" value="'%' + sysMessageTemplate.templateType + '%'" />
+                AND template_type like #{templateTypePattern}
+            </if>
+            <if test="sysMessageTemplate.templateContent != null">
+                <bind name="templateContentPattern" value="'%' + sysMessageTemplate.templateContent + '%'" />
+                AND template_content like #{templateContentPattern}
+            </if>
+            <if test="sysMessageTemplate.templateName != null">
+                <bind name="templateNamePattern" value="'%' + sysMessageTemplate.templateName + '%'" />
+                AND template_name like #{templateNamePattern}
+            </if>
+        </where>
+        order by create_time desc
+    </select>
+</mapper>

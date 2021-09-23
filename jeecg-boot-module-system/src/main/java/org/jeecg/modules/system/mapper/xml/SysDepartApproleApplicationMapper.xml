@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.system.mapper.SysDepartApproleApplicationMapper">
+    <select id="queryDepartByAppRoleAndApplication" parameterType="String" resultType="org.jeecg.modules.system.entity.SysDepart">
+        select
+            sd.*
+        from
+            (
+                SELECT
+                    sdra.*
+                from
+                    sys_depart_approle_application sdra
+                where
+                    sdra.application_id = #{applicationId}
+                  and
+                    sdra.approle_id = #{appRoleId}
+            ) s
+                left JOIN
+            sys_depart sd
+            on
+                s.depart_id = sd.id;
+    </select>
+</mapper>

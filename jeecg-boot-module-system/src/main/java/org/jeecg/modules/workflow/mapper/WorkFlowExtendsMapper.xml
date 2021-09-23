@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.workflow.mapper.WorkFlowExtendsMapper">
+
+   <select id="getExtendsByProcKey" resultType="org.jeecg.modules.workflow.entity.vo.ProcessDevelopmentVO" parameterType="java.util.List">
+        SELECT PROC_KEY_,PROC_DESC_,PROC_NAME_,ICON_STYLE_,PROC_DEF_GROUP_,ICON_COLOUR_
+        from act_proc_expand
+        where PROC_KEY_ in
+        <foreach collection="recentUse" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+   </select>
+
+</mapper>

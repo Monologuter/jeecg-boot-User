@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.system.mapper.SysApplicationMapper">
+    <select id="queryApplicationOrTemplateByAIByAppType" resultType="org.jeecg.modules.system.entity.SysApplication">
+        SELECT
+	sa.*
+from
+	sys_application sa
+WHERE
+	sa.application_type in (
+	SELECT
+		sc.id
+	FROM
+		sys_category sc
+	WHERE
+		sc.`name` LIKE concat('%',#{KeyWord},'%')
+);
+    </select>
+
+    <select id="queryApplicationOrTemplateByAppName" resultType="org.jeecg.modules.system.entity.SysApplication">
+        select * from sys_application where application_name like concat('%',#{KeyWord},'%');
+    </select>
+
+</mapper>

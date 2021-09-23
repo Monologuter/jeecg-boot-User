@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.onlgraph.mapper.GraphReportDatasetsMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="org.jeecg.modules.onlgraph.entity.GraphReportDatasetsDO">
+    <result column="id" property="id" />
+        <result column="del_flag" property="delFlag" />
+        <result column="datasource_id" property="datasourceId" />
+        <result column="sys_org_code" property="sysOrgCode" />
+        <result column="dataset_name" property="datasetName" />
+        <result column="is_pagination" property="isPagination" />
+        <result column="report_data" property="reportData" />
+        <result column="report_param" property="reportParam" />
+        <result column="report_id" property="reportId" />
+        <result column="data_type" property="dataType" />
+        <result column="page_count" property="pageCount" />
+        <result column="create_time" property="createTime" />
+        <result column="create_by" property="createBy" />
+        <result column="update_by" property="updateBy" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id,
+        del_flag, datasource_id, sys_org_code, dataset_name, is_pagination, report_data, report_param, report_id, data_type, page_count, create_time, create_by, update_by, update_time
+    </sql>
+
+</mapper>

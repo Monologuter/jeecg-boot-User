@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.form.mapper.OperationLogMapper">
+    <!--增加日志-->
+    <insert id="addOperationLog" parameterType="org.jeecg.modules.form.entity.OperationLog">
+        insert into fd_form_data_oper_log (id, form_data_id, oper_type, oper_platform, oper_user,
+                                           oper_dept_id, oper_ip, oper_port, raw_old_data, raw_new_data,
+                                           oper_result, create_time, form_id)
+        values (#{id}, #{formDataId}, #{operType}, #{operPlatform}, #{operUser}, #{operDeptId}, #{operIp}, #{operPort},
+                #{rawOldData,jdbcType=OTHER,typeHandler=org.jeecg.modules.form.typehandler.JsonbTypeHandler},
+                #{rawNewData,jdbcType=OTHER,typeHandler=org.jeecg.modules.form.typehandler.JsonbTypeHandler},
+                #{operResult}, #{createTime}, #{formId})
+    </insert>
+
+    <!--条件搜索日志-->
+    <select id="listByParam" resultType="org.jeecg.modules.form.entity.OperationLog" parameterType="String">
+        select id,form_data_id,oper_type,oper_platform,oper_user,oper_dept_id,oper_ip,
+        oper_port,raw_old_data,raw_new_data,oper_result,create_time,form_id
+        FROM fd_form_data_oper_log
+        <!--0 0 0-->
+        <if test="type==null and platform==null and user==null">
+            order by create_time desc
+        </if>
+        <!--1 0 0-->
+        <if test="type!=null and platform==null and user==null">
+            where oper_type = #{type} order by create_time desc
+        </if>
+        <!--1 1 0-->
+        <if test="type!=null and platform!=null and user==null">
+            where oper_type=#{type} and oper_platform=#{platform} order by create_time desc
+        </if>
+        <!--1 1 1-->
+        <if test="type!=null and platform!=null and user!=null">
+            where oper_type=#{type} and oper_platform=#{platform} and oper_user=#{user} order by create_time desc
+        </if>
+        <!--0 1 0-->
+        <if test="type==null and platform!=null and user==null">
+            where oper_platform=#{platform} order by create_time desc
+        </if>
+        <!--0 0 1-->
+        <if test="type==null and platform==null and user!=null">
+            where oper_user=#{user} order by create_time desc
+        </if>
+        <!--0 1 1-->
+        <if test="type==null and platform!=null and user!=null">
+            where oper_platform=#{platform} and oper_user=#{user} order by create_time desc
+        </if>
+        <!--1 0 1-->
+        <if test="type!=null and platform==null and user!=null">
+            where oper_type=#{type} and oper_user=#{user} order by create_time desc
+        </if>
+    </select>
+
+    <select id="getLogByFormId" resultType="org.jeecg.modules.form.vo.OperationLogVO" parameterType="String">
+        select oper_user,create_time,oper_type
+        FROM fd_form_data_oper_log
+        WHERE form_id = #{formId}
+    </select>
+</mapper>

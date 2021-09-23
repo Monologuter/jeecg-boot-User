@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.jeecg.modules.workflow.mapper.ActIdInfoMapper">
+    <select id="selectAvatartByIds" parameterType="java.util.List"
+            resultType="java.lang.String">
+        SELECT
+        avatar
+        FROM sys_user
+        WHERE id in
+        <trim prefix="(" suffix=")">
+            <foreach collection="ids" index="index" item="id" separator=",">
+                #{id}
+            </foreach>
+        </trim>
+    </select>
+
+
+    <select id="selectAvatarById" parameterType="string" resultType="string">
+--         根据用户id查询用户头像 从sys_user表中获取
+        select avatar  from sys_user  where  id  = #{id};
+    </select>
+</mapper>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.onlgraph.mapper.GraphBigscreenMapper">
+
+
+    <resultMap id="GraphBigscreenList" type="org.jeecg.modules.onlgraph.vo.GraphBigscreenVO">
+        <result column="id" property="id"/>
+        <result column="create_by" property="createBy"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_by" property="updateBy"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="sys_org_code" property="sysOrgCode"/>
+        <result column="graph_bigscreen_name" property="graphBigscreenName"/>
+        <result column="graph_bigscreen_description" property="graphBigscreenDescription"/>
+        <result column="graph_bigscreen_code" property="graphBigscreenCode"/>
+        <result column="graph_screen_height" property="graphScreenHeight"/>
+        <result column="graph_screen_width" property="graphScreenWidth"/>
+        <result column="graph_screen_introduction" property="graphScreenIntroduction"/>
+        <result column="graph_screen_background_color" property="graphScreenBackgroundColor"/>
+        <result column="graph_screen_background_picture" property="graphScreenBackgroundPicture"/>
+        <result column="graph_screen_is_template" property="graphScreenIsTemplate"/>
+        <result column="del_flag" property="delFlag"/>
+        <result column="permission_status" property="permissionStatus"/>
+        <result column="config" property="config"/>
+        <collection property="GraphBigscreenCards" ofType="org.jeecg.modules.onlgraph.entity.GraphBigscreenCardDO">
+            <result column="id" property="id"/>
+            <result column="create_by" property="createBy"/>
+            <result column="create_time" property="createTime"/>
+            <result column="update_by" property="updateBy"/>
+            <result column="update_time" property="updateTime"/>
+            <result column="sys_org_code" property="sysOrgCode"/>
+            <result column="biggreen_id" property="biggreenId"/>
+            <result column="card_graph_type" property="cardGraphType"/>
+            <result column="card_data_type" property="cardDataType"/>
+            <result column="card_data" property="cardData"/>
+            <result column="card_special_filed" property="cardSpecialFiled"/>
+            <result column="del_flag" property="delFlag"/>
+            <result column="card_show_type" property="cardShowType"/>
+            <result column="is_show" property="isShow"/>
+            <result column="css_style" property="cssStyle"/>
+            <result column="card_code" property="cardCode"/>
+        </collection>
+    </resultMap>
+
+    <!--    一对多大屏设计查询-->
+    <select id="getBigscreen" resultMap="GraphBigscreenList">
+        SELECT
+            b.id, b.create_by, b.create_time, b.update_by, b.update_time,
+            b.sys_org_code,b.graph_bigscreen_name,b.graph_bigscreen_description,
+            b.graph_bigscreen_code,b.graph_screen_height,b.graph_screen_width,
+            b.graph_screen_introduction,b.graph_screen_background_color,
+            b.graph_screen_background_picture,b.graph_screen_is_template,
+            b.del_flag,b.permission_status,b.config,
+            c.id c_id,c.create_by c_create_by,c.create_time c_create_time,
+            c.update_by c_update_by,c.update_time c_update_time,
+            c.sys_org_code c_sys_org_code,c.del_flag c_del_flag,
+            c.biggreen_id,c.card_graph_type,c.card_data_type,c.card_data,
+            c.card_special_filed,c.card_show_type,c.is_show,
+            c.css_style,c.card_code
+        FROM graph_bigscreen b
+                 LEFT JOIN graph_bigscreen_card c ON b.id=c.biggreen_id
+        WHERE b.id=#{id}
+    </select>
+
+    <!-- 执行select sql语句 -->
+    <select id="executeSeleteBySql" resultType="map" parameterType="java.lang.String">
+        ${sql}
+    </select>
+
+
+</mapper>

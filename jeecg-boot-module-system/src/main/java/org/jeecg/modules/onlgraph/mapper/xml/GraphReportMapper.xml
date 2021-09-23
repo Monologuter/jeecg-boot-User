@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.onlgraph.mapper.GraphReportMapper">
+
+    <resultMap id="GraphReportList" type="org.jeecg.modules.onlgraph.vo.GraphReportVO">
+        <result column="id" property="id"/>
+        <result column="graph_report_code" property="graphReportCode"/>
+        <result column="graph_report_name" property="graphReportName"/>
+        <result column="graph_report_type" property="graphReportType"/>
+        <result column="sys_org_code" property="sysOrgCode"/>
+        <result column="is_template" property="isTemplate"/>
+        <result column="del_flag" property="delFlag"/>
+        <result column="create_time" property="createTime"/>
+        <result column="create_by" property="createBy"/>
+        <result column="update_by" property="updateBy"/>
+        <result column="update_time" property="updateTime"/>
+        <collection property="GraphReportCells" ofType="org.jeecg.modules.onlgraph.entity.GraphReportCellDO">
+            <result column="id" property="id"/>
+            <result column="report_id" property="reportId"/>
+            <result column="sheet_id" property="sheetId"/>
+            <result column="dataset_name" property="datasetName"/>
+            <result column="coordsx" property="coordsx"/>
+            <result column="coordsy" property="coordsy"/>
+            <result column="is_merge" property="isMerge"/>
+            <result column="row_span" property="rowSpan"/>
+            <result column="col_span" property="colSpan"/>
+            <result column="cell_classname" property="cellClassname"/>
+            <result column="cell_value" property="cellValue"/>
+            <result column="cell_value_type" property="cellValueType"/>
+            <result column="cell_extend" property="cellExtend"/>
+            <result column="aggregate_type" property="aggregateType"/>
+            <result column="cell_function" property="cellFunction"/>
+            <result column="font_color" property="fontColor"/>
+            <result column="back_color" property="backColor"/>
+            <result column="font_size" property="fontSize"/>
+            <result column="is_bold" property="isBold"/>
+            <result column="create_by" property="createBy"/>
+            <result column="create_time" property="createTime"/>
+            <result column="update_by" property="updateBy"/>
+            <result column="update_time" property="updateTime"/>
+            <result column="del_flag" property="delFlag"/>
+            <result column="sys_org_code" property="sysOrgCode"/>
+        </collection>
+    </resultMap>
+
+    <!-- 一对多报表设计查询 -->
+    <select id="getReport" resultMap="GraphReportList">
+        SELECT
+            r.id, r.graph_report_code, r.graph_report_name, r.graph_report_type,
+            r.sys_org_code, r.is_template, r.del_flag,
+            r.create_time, r.create_by, r.update_by, r.update_time,
+            c.id c_id,
+            c.sys_org_code c_sys_org_code,c.del_flag c_del_flag,
+            c.create_by c_create_by, c.create_time c_create_time,
+            c.update_by c_update_by, c.update_time c_update_time,
+            c.report_id, c.sheet_id, c.dataset_name, c.coordsx,
+            c.coordsy, c.is_merge, c.row_span, c.col_span, c.cell_classname,
+            c.cell_value, c.cell_value_type, c.cell_extend, c.aggregate_type,
+            c.cell_function, c.font_color, c.back_color, c.font_size,c.is_bold
+        FROM graph_report r
+                LEFT JOIN graph_report_cell c ON r.id = c.report_id
+        WHERE r.id=#{id}
+    </select>
+
+</mapper>

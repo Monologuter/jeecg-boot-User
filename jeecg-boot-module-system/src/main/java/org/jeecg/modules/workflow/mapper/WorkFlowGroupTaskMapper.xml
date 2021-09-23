@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.jeecg.modules.workflow.mapper.WorkFlowGroupTaskMapper">
+
+    <resultMap id="GroupTask" type="org.jeecg.modules.workflow.entity.vo.GroupVO">
+        <id column="TASK_ID_" property="taskId"/>
+        <result column="taskName" property="taskName"/>
+        <result column="startUserName" property="startUserName"/>
+        <result column="START_TIME_" property="startTime"/>
+        <result column="peocDefName" property="processDefinitionName"/>
+        <result column="PROC_INST_ID_" property="processInstanceId"/>
+        <result column="groupName" property="groupName"/>
+    </resultMap>
+
+    <select id="queryGroupTask" resultMap="GroupTask">
+        SELECT DISTINCT
+        ahi.TASK_ID_,
+        aht.NAME_ taskName,
+        aiu.FIRST_ startUserName,
+        aht.START_TIME_,
+        arp.NAME_ peocDefName,
+        aht.PROC_INST_ID_,
+        aig.NAME_ groupName,
+        aim.USER_ID_,
+        aht.END_TIME_
+        FROM
+        act_id_membership aim
+        LEFT JOIN ( SELECT NAME_, ID_ FROM act_id_group)  aig ON aig.ID_ = aim.GROUP_ID_
+        INNER JOIN ( SELECT TASK_ID_, PROC_DEF_ID_, GROUP_ID_  FROM act_hi_identitylink) ahi ON ahi.GROUP_ID_ = aim.GROUP_ID_
+        LEFT JOIN ( SELECT NAME_, PROC_INST_ID_, PROC_DEF_ID_, START_TIME_, END_TIME_, ID_ FROM act_hi_taskinst) aht ON aht.ID_ = ahi.TASK_ID_
+        LEFT JOIN ( SELECT NAME_ , ID_ FROM act_re_procdef) arp ON arp.ID_ = aht.PROC_DEF_ID_
+        LEFT JOIN ( SELECT START_USER_ID_, PROC_INST_ID_ FROM act_hi_procinst) ahp ON ahp.PROC_INST_ID_ = aht.PROC_INST_ID_
+        LEFT JOIN ( SELECT ID_, FIRST_ FROM act_id_user) aiu ON aiu.ID_ = ahp.START_USER_ID_
+        WHERE
+        aim.USER_ID_ = #{assignee}
+        AND
+        aht.END_TIME_ IS NULL
+        <if test="startUserName != null">
+            AND aiu.FIRST_ LIKE CONCAT(#{startUserName},'%')
+        </if>
+        <if test="groupName != null">
+            AND aig.NAME_ LIKE CONCAT(#{groupName},'%')
+        </if>
+        ORDER BY
+        aht.START_TIME_ DESC
+        LIMIT #{pageSize} OFFSET #{offset}
+    </select>
+
+    <select id="queryGroupTaskCount" resultType="java.lang.Long">
+        SELECT DISTINCT
+        COUNT( * )
+        FROM
+        act_id_membership aim
+        LEFT JOIN ( SELECT NAME_, ID_ FROM act_id_group)  aig ON aig.ID_ = aim.GROUP_ID_
+        INNER JOIN ( SELECT TASK_ID_, PROC_DEF_ID_, GROUP_ID_  FROM act_hi_identitylink) ahi ON ahi.GROUP_ID_ = aim.GROUP_ID_
+        LEFT JOIN ( SELECT NAME_, PROC_INST_ID_, PROC_DEF_ID_, START_TIME_, END_TIME_, ID_ FROM act_hi_taskinst) aht ON aht.ID_ = ahi.TASK_ID_
+        LEFT JOIN ( SELECT NAME_ , ID_ FROM act_re_procdef) arp ON arp.ID_ = aht.PROC_DEF_ID_
+        LEFT JOIN ( SELECT START_USER_ID_, PROC_INST_ID_ FROM act_hi_procinst) ahp ON ahp.PROC_INST_ID_ = aht.PROC_INST_ID_
+        LEFT JOIN ( SELECT ID_, FIRST_ FROM act_id_user) aiu ON aiu.ID_ = ahp.START_USER_ID_
+        WHERE
+        aim.USER_ID_ = #{assignee}
+        AND
+        aht.END_TIME_ IS NULL
+        <if test="startUserName != null">
+            AND aiu.FIRST_ LIKE CONCAT(#{startUserName},'%')
+        </if>
+        <if test="groupName != null">
+            AND aig.NAME_ LIKE CONCAT(#{groupName},'%')
+        </if>
+    </select>
+
+</mapper>

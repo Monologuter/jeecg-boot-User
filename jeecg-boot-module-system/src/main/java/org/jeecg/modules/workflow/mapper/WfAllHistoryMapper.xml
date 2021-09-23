@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.workflow.mapper.WfAllHistoryMapper">
+
+    <resultMap id="taskMap" type="org.jeecg.modules.workflow.entity.vo.HistoryTaskVO">
+        <result column="PROC_DEF_ID_"  property="processDefinitionId" />
+        <result column="PROC_INST_ID_"  property="processInstanceId" />
+        <result column="BUSINESS_KEY_"  property="businessTitle" />
+        <result column="ID_"  property="taskId" />
+        <result column="NAME_"  property="name" />
+        <result column="FIRST_"  property="startUserId" />
+        <result column="START_TIME_"  property="startTime" />
+        <result column="END_TIME_"  property="endTime" />
+        <result column="DELETE_REASON_"  property="state" />
+        <result column="DURATION_"  property="durationLong" />
+    </resultMap>
+
+    <select id="queryAllHistoricalTaskPage" resultMap="taskMap">
+        select
+            act_hi_taskinst.ID_,
+            act_hi_taskinst.PROC_INST_ID_,
+            act_hi_procinst.BUSINESS_KEY_,
+            act_hi_taskinst.NAME_,
+            act_id_user.FIRST_,
+            act_hi_taskinst.START_TIME_,
+            act_hi_taskinst.END_TIME_,
+            act_hi_taskinst.DELETE_REASON_,
+            act_hi_taskinst.DURATION_,
+            act_hi_taskinst.PROC_DEF_ID_
+        from act_hi_taskinst
+        left join act_hi_procinst
+            on act_hi_taskinst.PROC_INST_ID_ = act_hi_procinst.ID_
+        left join act_id_user
+            on act_id_user.ID_ = act_hi_procinst.START_USER_ID_
+        <where>
+            <if test="taskId != null and taskId != ''">
+                and  act_hi_taskinst.ID_ like CONCAT('%',#{taskId},'%')
+            </if>
+            <if test="taskName != null and taskName != ''">
+                and  act_hi_taskinst.NAME_ like CONCAT('%',#{taskName},'%')
+            </if>
+        </where>
+        ORDER BY act_hi_taskinst.START_TIME_ DESC
+            limit #{firstResult},#{pageSize};
+    </select>
+
+    <select id="queryAllHistoricalTask" resultType="Integer">
+        select
+        count(*)
+        from act_hi_taskinst
+        left join act_hi_procinst
+        on act_hi_taskinst.PROC_INST_ID_ = act_hi_procinst.ID_
+        left join act_id_user
+        on act_id_user.ID_ = act_hi_procinst.START_USER_ID_
+        <where>
+            <if test="taskId != null and taskId != ''">
+                and  act_hi_taskinst.ID_ like CONCAT('%',#{taskId},'%')
+            </if>
+            <if test="taskName != null and taskName != ''">
+                and  act_hi_taskinst.NAME_ like CONCAT('%',#{taskName},'%')
+            </if>
+        </where>
+        ORDER BY act_hi_taskinst.START_TIME_ DESC
+    </select>
+
+    <resultMap id="procInstMap" type="org.jeecg.modules.workflow.entity.vo.ProcessInstanceDTO">
+        <result property="name" column="NAME_" />
+        <result property="businessKey" column="BUSINESS_KEY_" />
+        <result property="processDefinitionId" column="PROC_DEF_ID_" />
+        <result property="processInstanceId" column="ID_" />
+        <result property="initiator" column="FIRST_"/>
+        <result property="currentTaskId" column="taskID"/>
+        <result property="currentTask" column="name1"/>
+        <result property="assignee" column="ASSIGNEE_"/>
+        <result property="startTime" column="START_TIME_"/>
+        <result property="dueDate" column="DURATION_" />
+        <result property="State" column="SUSPENSION_STATE_" />
+    </resultMap>
+
+    <select id="getProcessInstanceListPage" resultMap="procInstMap">
+        select distinct
+        act_re_procdef.NAME_,
+        act_hi_procinst.BUSINESS_KEY_,
+        act_hi_Procinst.PROC_DEF_ID_,
+        act_hi_procinst.ID_,
+        act_id_user.FIRST_,
+        act_ru_task.ID_ as taskID,
+        act_ru_task.NAME_ as name1,
+        act_ru_task.ASSIGNEE_,
+        act_hi_procinst.START_TIME_,
+        act_hi_procinst.DURATION_,
+        act_ru_execution.SUSPENSION_STATE_
+        from act_ru_execution
+            left JOIN act_re_procdef
+        ON act_ru_execution.PROC_DEF_ID_ = act_re_procdef.ID_
+           and act_ru_execution.TENANT_ID_ = act_re_procdef.TENANT_ID_
+            left JOIN act_hi_Procinst
+        ON act_ru_execution.PROC_INST_ID_ = act_hi_Procinst.ID_
+            left JOIN act_ru_task
+        ON act_ru_execution.PROC_INST_ID_ = act_ru_task.PROC_INST_ID_
+            left JOIN act_id_user
+        ON act_id_user.ID_ = act_hi_procinst.START_USER_ID_
+        <where>
+        <if test="processName != null and processName != ''">
+            and  act_re_procdef.NAME_ like CONCAT('%',#{processName},'%')
+        </if>
+        <if test="processInstanceId != null and processInstanceId != ''">
+            and  act_hi_procinst.ID_ like CONCAT('%',#{processInstanceId},'%')
+        </if>
+        <if test="initiator != null and initiator != ''">
+            and  act_hi_procinst.START_USER_ID_ like CONCAT('%',#{initiator},'%')
+        </if>
+        </where>
+        ORDER BY act_hi_procinst.START_TIME_ DESC
+        limit #{firstResult},#{pageSize};
+    </select>
+
+    <select id="getProcessInstanceList" resultType="Integer">
+        select
+        count(*)
+        from act_ru_execution
+        left JOIN act_re_procdef
+        ON act_ru_execution.PROC_DEF_ID_ = act_re_procdef.ID_
+        and act_ru_execution.TENANT_ID_ = act_re_procdef.TENANT_ID_
+        left JOIN act_hi_Procinst
+        ON act_ru_execution.PROC_INST_ID_ = act_hi_Procinst.ID_
+        left JOIN act_ru_task
+        ON act_ru_execution.PROC_INST_ID_ = act_ru_task.PROC_INST_ID_
+        left JOIN act_id_user
+        ON act_id_user.ID_ = act_hi_procinst.START_USER_ID_
+        <where>
+            <if test="processName != null and processName != ''">
+                and  act_re_procdef.NAME_ like CONCAT('%',#{processName},'%')
+            </if>
+            <if test="processInstanceId != null and processInstanceId != ''">
+                and  act_hi_procinst.ID_ like CONCAT('%',#{processInstanceId},'%')
+            </if>
+            <if test="initiator != null and initiator != ''">
+                and  act_hi_procinst.START_USER_ID_ like CONCAT('%',#{initiator},'%')
+            </if>
+        </where>
+        ORDER BY act_hi_procinst.START_TIME_ DESC
+    </select>
+
+    <resultMap id="ProcessDefinition" type="org.jeecg.modules.workflow.entity.vo.HistoryProcessVO">
+
+        <id column="ID_" property="processInstanceId"/>
+        <result column="BUSINESS_KEY_" property="businessTitle"/>
+        <result column="PROC_DEF_ID_" property="processDefinitionId"/>
+        <result column="NAME_" property="name"/>
+        <result column="FIRST_" property="startUserId"/>
+        <result column="START_TIME_" property="startTime"/>
+        <result column="END_TIME_" property="endTime"/>
+        <result column="DURATION_" property="durationLong"/>
+        <result column="STATE_" property="state"/>
+    </resultMap>
+
+    <select id="queryAllHistoricalProcessPage" resultMap="ProcessDefinition">
+        SELECT
+                            act_hi_procinst.BUSINESS_KEY_,
+                            act_hi_procinst.ID_ ,
+                            act_hi_procinst.PROC_DEF_ID_ ,
+                            act_re_procdef.NAME_,
+                            act_id_user.FIRST_,
+                            act_hi_procinst.START_TIME_ ,
+                            act_hi_procinst.END_TIME_ ,
+                            act_hi_procinst.DURATION_,
+                            act_hi_procinst.STATE_
+        FROM act_hi_procinst
+        left JOIN act_re_procdef
+            on act_hi_procinst.PROC_DEF_ID_ = act_re_procdef.ID_
+        and act_hi_procinst.TENANT_ID_ = act_re_procdef.TENANT_ID_
+        left join act_id_user
+            on act_id_user.ID_ = act_hi_procinst.START_USER_ID_
+
+        where 1 = 1
+            <if test="procInstId != null and procInstId != '' ">
+            AND act_hi_procinst.ID_ LIKE concat('%',#{procInstId},'%')
+            </if>
+            <if test="state != null and state != ''">
+            AND act_hi_procinst.STATE_ = #{state}
+            </if>
+        ORDER BY act_hi_procinst.START_TIME_ DESC
+        limit #{firstResult},#{pageSize};
+    </select>
+
+    <select id="queryAllHistoricalProcess" resultType="Integer">
+        SELECT
+        count(*)
+        FROM act_hi_procinst
+        left JOIN act_re_procdef
+            on act_hi_procinst.PROC_DEF_ID_ = act_re_procdef.ID_
+        and act_hi_procinst.TENANT_ID_ = act_re_procdef.TENANT_ID_
+        left join act_id_user
+            on act_id_user.ID_ = act_hi_procinst.START_USER_ID_
+
+        where 1 = 1
+        <if test="procInstId != null and procInstId != '' ">
+            AND act_hi_procinst.ID_ LIKE concat('%',#{procInstId},'%')
+        </if>
+        <if test="state != null and state != ''">
+            AND act_hi_procinst.STATE_ = #{state}
+        </if>
+        ORDER BY act_hi_procinst.START_TIME_ DESC
+    </select>
+
+</mapper>

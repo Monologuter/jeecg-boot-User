@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.jeecg.modules.workflow.mapper.WorkFlowMyHistoricalTaskMapper">
+
+    <resultMap id="MyHistoricalTask" type="org.jeecg.modules.workflow.entity.vo.MyHistoricalTaskVO">
+        <id column="PROC_DEF_ID_" property="processDefinitionId"/>
+        <result column="PROC_INST_ID_" property="processInstanceId"/>
+        <result column="ID_" property="taskId"/>
+        <result column="NAME_" property="name"/>
+        <result column="FIRST_" property="startUserId"/>
+        <result column="START_TIME_" property="startTime"/>
+        <result column="END_TIME_" property="endTime"/>
+        <result column="DELETE_REASON_" property="state"/>
+        <result column="BUSINESS_KEY_" property="businessTitle"/>
+        <result column="DURATION_" property="duration"/>
+    </resultMap>
+    
+    <resultMap id="hiTask" type="org.jeecg.modules.workflow.entity.vo.ActHiTaskinstVO">
+        <id column="ID_" property="taskId"/>
+        <result column="TASK_DEF_KEY_" property="taskDefKey"/>
+        <result column="PROC_DEF_KEY_" property="procDefKey"/>
+        <result column="PROC_DEF_ID_" property="procDefId"/>
+        <result column="ROOT_PROC_INST_ID_" property="rootProcInstId"/>
+        <result column="PROC_INST_ID_" property="procInstId"/>
+        <result column="EXECUTION_ID_" property="executionId"/>
+        <result column="ACT_INST_ID_" property="actInstId"/>
+        <result column="NAME_" property="name"/>
+        <result column="ASSIGNEE_" property="assignee"/>
+        <result column="FIRST_" property="startUserId"/>
+        <result column="START_TIME_" property="startTime"/>
+        <result column="END_TIME_" property="endTime"/>
+        <result column="DURATION_" property="duration"/>
+        <result column="DELETE_REASON_" property="deleteReason"/>
+    </resultMap>
+
+
+    <select id="queryMyHistoricalTask" resultMap="MyHistoricalTask">
+        SELECT
+            ht.PROC_DEF_ID_,
+            ht.PROC_INST_ID_,
+            ht.ID_,
+            ht.NAME_,
+            iu.FIRST_,
+            ht.START_TIME_,
+            ht.END_TIME_,
+            ht.DELETE_REASON_,
+            hp.BUSINESS_KEY_,
+            ht.DURATION_
+        FROM
+            act_hi_taskinst ht
+            LEFT JOIN ( SELECT START_USER_ID_, PROC_INST_ID_, STATE_, BUSINESS_KEY_ FROM act_hi_procinst ) hp ON ht.PROC_INST_ID_ = hp.PROC_INST_ID_
+            LEFT JOIN ( SELECT ID_,FIRST_ FROM act_id_user) iu ON hp.START_USER_ID_ = iu.ID_
+        WHERE
+            ht.ASSIGNEE_ = #{assignee}
+            <if test="processInstanceId != null">
+                AND ht.PROC_INST_ID_ like concat(#{processInstanceId}, '%')
+            </if>
+            <if test="startUserName != null">
+                AND iu.FIRST_ like concat(#{startUserName}, '%')
+            </if>
+        ORDER BY
+            ht.START_TIME_ DESC
+            LIMIT #{pageSize} OFFSET #{offset}
+    </select>
+
+    <select id="queryMyHistoricalTaskCount" resultType="java.lang.Long">
+        SELECT
+            COUNT( ht.ID_ )
+        FROM
+            act_hi_taskinst ht
+            LEFT JOIN ( SELECT START_USER_ID_, PROC_INST_ID_ FROM act_hi_procinst ) hp ON ht.PROC_INST_ID_ = hp.PROC_INST_ID_
+            LEFT JOIN ( SELECT ID_,FIRST_ FROM act_id_user) iu ON hp.START_USER_ID_ = iu.ID_
+        WHERE
+            ASSIGNEE_ = #{assignee}
+            <if test="processInstanceId != null">
+                AND ht.PROC_INST_ID_ like concat(#{processInstanceId}, '%')
+            </if>
+            <if test="startUserName != null">
+                AND iu.FIRST_ like concat(#{startUserName}, '%')
+            </if>
+    </select>
+
+    <select id="queryHistoricTaskByProceInst" resultMap="hiTask">
+        SELECT
+            ID_,
+            TASK_DEF_KEY_,
+            PROC_DEF_ID_,
+            NAME_,
+            ASSIGNEE_,
+            START_TIME_,
+            END_TIME_,
+            DELETE_REASON_
+        FROM
+            act_hi_taskinst
+        WHERE
+            PROC_INST_ID_ = #{proceInst}
+    </select>
+</mapper>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.jeecg.modules.workflow.mapper.WorkFlowMyRelatedProcessMapper">
+
+    <resultMap id="ProcessByTaskAssignee" type="org.jeecg.modules.workflow.entity.vo.ProcessInstanceDTO">
+        <id column="ID_" property="processInstanceId"/>
+        <result column="NAME_" property="name"/>
+        <result column="BUSINESS_KEY_" property="businessKey"/>
+        <result column="PROC_DEF_ID_" property="processDefinitionId"/>
+        <result column="START_USER_ID_" property="initiator"/>
+        <result column="TASK_ID_" property="currentTaskId"/>
+        <result column="ACT_NAME_" property="currentTask"/>
+        <result column="ASSIGNEE_" property="assignee"/>
+        <result column="START_TIME_" property="startTime"/>
+        <result column="ACT_INST_STATE_" property="suspensionState"/>
+        <result column="STATE_" property="proState"/>
+    </resultMap>
+
+    <select id="queryProcessByTaskAssignee" resultMap="ProcessByTaskAssignee">
+        SELECT
+            rp.NAME_,
+            hp.BUSINESS_KEY_,
+            hp.ID_,
+            hp.PROC_DEF_ID_,
+            hp.START_USER_ID_,
+            hp.STATE_,
+            hp.END_TIME_,
+            ha.TASK_ID_,
+            ha.ACT_NAME_,
+            ha.ASSIGNEE_,
+            ha.START_TIME_,
+            ha.ACT_INST_STATE_
+        FROM
+            act_hi_procinst hp
+            LEFT JOIN ( SELECT DISTINCT ASSIGNEE_, PROC_INST_ID_ FROM act_hi_taskinst ) ht ON hp.ID_ = ht.PROC_INST_ID_
+            LEFT JOIN ( SELECT ID_, NAME_ FROM act_re_procdef ) rp ON hp.PROC_DEF_ID_ = rp.ID_
+            LEFT JOIN ( SELECT PROC_INST_ID_, ACT_NAME_, TASK_ID_, ACT_INST_STATE_, ASSIGNEE_, START_TIME_,END_TIME_, DURATION_, ACT_TYPE_ FROM act_hi_actinst ) ha ON hp.ID_ = ha.PROC_INST_ID_
+        WHERE
+            ht.ASSIGNEE_ = #{assignee}
+            AND (ha.ACT_INST_STATE_ = 0 OR ha.END_TIME_=hp.END_TIME_)
+            AND ha.ACT_TYPE_ LIKE '%Task'
+            <if test="proState != null">
+                AND hp.STATE_ like concat('%', #{proState}, '%')
+            </if>
+            <if test="startUserId != null">
+                AND hp.START_USER_ID_ like concat('%', #{startUserId}, '%')
+            </if>
+        ORDER BY
+            rp.NAME_
+            LIMIT #{pageSize} OFFSET #{offset}
+    </select>
+
+    <select id="queryProcessByTaskAssigneeCount" resultType="java.lang.Long">
+        SELECT
+            COUNT( hp.ID_ )
+        FROM
+            act_hi_procinst hp
+        LEFT JOIN ( SELECT DISTINCT ASSIGNEE_, PROC_INST_ID_ FROM act_hi_taskinst ) ht ON hp.ID_ = ht.PROC_INST_ID_
+        LEFT JOIN ( SELECT ID_, NAME_ FROM act_re_procdef ) rp ON hp.PROC_DEF_ID_ = rp.ID_
+        LEFT JOIN ( SELECT PROC_INST_ID_, ACT_NAME_, TASK_ID_, ACT_INST_STATE_, ASSIGNEE_, START_TIME_,END_TIME_, DURATION_, ACT_TYPE_ FROM act_hi_actinst ) ha ON hp.ID_ = ha.PROC_INST_ID_
+        WHERE
+        ht.ASSIGNEE_ = #{assignee}
+        AND (ha.ACT_INST_STATE_ = 0 OR ha.END_TIME_=hp.END_TIME_)
+        AND ha.ACT_TYPE_ LIKE '%Task'
+            <if test="proState != null">
+                AND hp.STATE_ like concat('%', #{proState}, '%')
+            </if>
+            <if test="startUserId != null">
+                AND hp.START_USER_ID_ like concat('%', #{startUserId}, '%')
+            </if>
+    </select>
+
+</mapper>

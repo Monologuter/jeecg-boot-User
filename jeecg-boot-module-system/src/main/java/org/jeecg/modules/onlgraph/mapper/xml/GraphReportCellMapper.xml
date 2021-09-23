@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.onlgraph.mapper.GraphReportCellMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="org.jeecg.modules.onlgraph.entity.GraphReportCellDO">
+    <result column="id" property="id" />
+        <result column="sys_org_code" property="sysOrgCode" />
+        <result column="font_size" property="fontSize" />
+        <result column="col_span" property="colSpan" />
+        <result column="row_span" property="rowSpan" />
+        <result column="back_color" property="backColor" />
+        <result column="cell_value" property="cellValue" />
+        <result column="coordsx" property="coordsx" />
+        <result column="coordsy" property="coordsy" />
+        <result column="del_flag" property="delFlag" />
+        <result column="dataset_name" property="datasetName" />
+        <result column="is_bold" property="isBold" />
+        <result column="cell_extend" property="cellExtend" />
+        <result column="sheet_id" property="sheetId" />
+        <result column="font_color" property="fontColor" />
+        <result column="report_id" property="reportId" />
+        <result column="is_merge" property="isMerge" />
+        <result column="cell_function" property="cellFunction" />
+        <result column="cell_value_type" property="cellValueType" />
+        <result column="cell_classname" property="cellClassname" />
+        <result column="aggregate_type" property="aggregateType" />
+        <result column="create_time" property="createTime" />
+        <result column="create_by" property="createBy" />
+        <result column="update_by" property="updateBy" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id,
+        sys_org_code, font_size, col_span, row_span, back_color, cell_value, coordsx, coordsy, del_flag, dataset_name, is_bold, cell_extend, sheet_id, font_color, report_id, is_merge, cell_function, cell_value_type, cell_classname, aggregate_type, create_time, create_by, update_by, update_time
+    </sql>
+
+</mapper>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.form.mapper.FormMeetingScheduleMapper">
+
+    <select id="judgeMeetingTimeByTeamAndPlace" resultType="org.jeecg.modules.form.dto.FormMeetingStartEndDTO">
+        select start,end
+        from fd_form_meeting_schedule
+        where team = #{team}
+        <if test="place != ''">
+            and place = #{place}
+        </if>
+        and not(start > #{end}
+        or end &lt; #{start})
+    </select>
+
+</mapper>

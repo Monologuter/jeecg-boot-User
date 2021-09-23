@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.workflow.mapper.WorkFlowCandidateMapper">
+
+    <select id="getOwner" parameterType="string" resultType="java.lang.String">
+        SELECT OWNER_ FROM act_ru_task WHERE PROC_INST_ID_ = #{procInstId}
+    </select>
+
+</mapper>

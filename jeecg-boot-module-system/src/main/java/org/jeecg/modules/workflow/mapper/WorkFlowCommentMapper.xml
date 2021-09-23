@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.jeecg.modules.workflow.mapper.CommentMapper">
+
+    <resultMap id="BaseResultMap" type="org.jeecg.modules.workflow.entity.vo.Comment">
+        <id column="comment_id"  property="commentId" />
+        <result column="user_id"  property="userId" />
+        <result column="proc_ins_id"  property="procInsId" />
+        <result column="reply_user_id" property="replyUserId" />
+        <result column="pid"  property="pid" />
+        <result column="comment_msg" property="commentMsg" />
+        <result column="creat_time"  property="creatTime" />
+    </resultMap>
+
+    <resultMap id="UserMap" type="org.jeecg.modules.workflow.entity.vo.UserDTO">
+        <id column="id" property="id" />
+        <result column="username" property="firstName" />
+        <result column="realname" property="lastName" />
+        <result column="email" property="email" />
+        <result column="password" property="password" />
+        <result column="avatar"  property="avatar" />
+    </resultMap>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+        delete from comment
+        where comment_id = #{commentId}
+    </delete>
+
+    <insert id="insertComment" parameterType="org.jeecg.modules.workflow.entity.vo.Comment">
+        insert into comment (comment_id, user_id, proc_ins_id,
+                             reply_user_id, pid, comment_msg,
+                             creat_time)
+        values (#{commentId}, #{userId}, #{procInsId},
+                #{replyUserId}, #{pid}, #{commentMsg},
+                #{creatTime})
+    </insert>
+
+    <update id="updateByPrimaryKey" parameterType="org.jeecg.modules.workflow.entity.vo.Comment">
+        update comment
+        set user_id = #{userId},
+            proc_ins_id = #{procInsId},
+            reply_user_id = #{replyUserId},
+            pid = #{pid},
+            comment_msg = #{commentMsg},
+            creat_time = #{creatTime}
+        where comment_Id = #{commentId}
+    </update>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        select comment_id, user_id, proc_ins_id, reply_user_id, pid, comment_msg, creat_time
+        from comment
+    </select>
+
+    <select id="getCommentIdByprocInsId" resultType="java.lang.String">
+        select comment_id from comment
+        where proc_ins_id = #{procInsId} and pid =0
+    </select>
+
+    <select id="selectCommentById" resultType="org.jeecg.modules.workflow.entity.vo.CommentMainVO">
+        SELECT u.id,u.username,u.avatar ,c.comment_id,c.comment_msg,c.creat_time
+        FROM  comment c
+        LEFT JOIN  sys_user u on c.user_id = u.id
+        where c.comment_id = #{id}
+    </select>
+
+    <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="UserMap">
+        select id, username, realname, email, username, password, avatar
+        from user
+        where user_id = #{id}
+    </select>
+
+    <select id="selectByPid" resultType="org.jeecg.modules.workflow.entity.vo.ReplyVO">
+        SELECT u.id,u.username,u.avatar ,c.comment_id,c.comment_msg,c.creat_time,c.reply_user_id
+        FROM
+        sys_user  u,
+        comment c
+        WHERE u.id = c.user_id
+        and c.pid = #{commentId}
+    </select>
+
+</mapper>

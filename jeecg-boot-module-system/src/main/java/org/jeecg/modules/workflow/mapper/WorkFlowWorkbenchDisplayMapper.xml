@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.workflow.mapper.WorkbenchDisplayMapper">
+
+    <resultMap id="findKeyAndVersionsResult" type="org.jeecg.modules.workflow.entity.vo.ProcessDevelopmentVO">
+        <id property="procKey"        column="PROC_KEY_"></id>
+        <result property="iconStyle"  column="ICON_STYLE_"></result>
+        <result property="iconColour" column="ICON_COLOUR_"></result>
+        <result property="procDesc"   column="PROC_DESC_"></result>
+        <result property="procName"   column="PROC_NAME_"></result>
+    </resultMap>
+
+    <resultMap id="getWorkbenchDisplayByGroupResult" type="org.jeecg.modules.workflow.entity.vo.ProcessDevelopmentVO">
+        <id property="procKey"        column="PROC_KEY_"></id>
+        <result property="iconStyle"  column="ICON_STYLE_"></result>
+        <result property="iconColour" column="ICON_COLOUR_"></result>
+        <result property="procDesc"   column="PROC_DESC_"></result>
+        <result property="procName"   column="PROC_NAME_"></result>
+    </resultMap>
+
+    <select id="getWorkbenchDisplayFindAllGroup" resultType="java.lang.String">
+        SELECT * FROM act_proc_classification
+    </select>
+
+    <select id="findKeyAndVersions" resultMap="findKeyAndVersionsResult">
+        select ICON_STYLE_,ICON_COLOUR_,PROC_DESC_,PROC_NAME_,PROC_KEY_
+        from act_proc_expand
+        WHERE PROC_KEY_ IN
+              (select KEY_ from act_re_procdef
+               where SUSPENSION_STATE_ = 1
+               group by KEY_)
+    </select>
+
+    <select id="getWorkbenchDisplayByGroup" resultMap="getWorkbenchDisplayByGroupResult">
+        select ICON_STYLE_,ICON_COLOUR_,PROC_DESC_,PROC_NAME_,PROC_KEY_
+        From act_proc_expand
+        WHERE PROC_DEF_GROUP_ = #{procDefGroup}
+    </select>
+
+</mapper>

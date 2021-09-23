@@ -1,0 +1,11 @@
+/target/
+/.idea/
+*.iml
+rebel.xml
+# Project exclude paths
+/jeecg-boot-base/jeecg-boot-base-api/jeecg-system-local-api/target/
+/jeecg-boot-base/jeecg-boot-base-core/target/
+/jeecg-boot-base/jeecg-boot-base-tools/target/
+/jeecg-boot-module-demo/target/
+/jeecg-boot-module-system/target/
+/jeecg-boot-starter/jeecg-boot-starter-redis/target/

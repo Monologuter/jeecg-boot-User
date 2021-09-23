@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.form.mapper.FormStyleMapper">
+   <select id="findByNameOrCode" parameterType="String" resultType="org.jeecg.modules.form.vo.FormStyleVO">
+        select id,name,content,code,type from fd_form_style
+        <!--当name和code都不为空,error-->
+        <if test="name != '%%' and code != '%%'">
+            where name like #{name} and code like #{code} order by create_time desc
+        </if>
+        <!--当name和code都为空,ok-->
+        <if test="name == '%%' and code == '%%'">
+            order by create_time desc
+        </if>
+        <!--当name为空，code不为空,error-->
+        <if test="name == '%%' and code != '%%'">
+            where code like #{code} order by create_time desc
+        </if>
+        <!--当name不为空，code为空,error-->
+        <if test="name != '%%' and code == '%%'">
+            where name like #{name} order by create_time desc
+        </if>
+   </select>
+</mapper>

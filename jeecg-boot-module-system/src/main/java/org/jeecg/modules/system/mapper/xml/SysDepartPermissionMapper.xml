@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.system.mapper.SysDepartPermissionMapper">
+    <!-- 批量插入部门和菜单关系-->
+    <insert id="insertBatch">
+        insert into sys_depart_permission (id,depart_id,permission_id) values
+        <foreach collection="list" separator="," item="item">
+            (#{item.id},#{item.departId},#{item.permissionId})
+        </foreach>
+    </insert>
+</mapper>

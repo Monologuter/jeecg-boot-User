@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.jeecg.modules.workflow.mapper.WorkFlowProcessDefinitionMapper">
+
+
+    <resultMap id="ProcessDefinition" type="org.jeecg.modules.workflow.entity.vo.ProcessDefinitionDTO">
+        <id column="ID_" property="processDefinitionId"/>
+        <result column="processDefinitionName" property="processDefinitionName"/>
+        <result column="KEY_" property="processDefinitionKey"/>
+        <result column="processDefinitionDeployState" property="processDefinitionDeployState"/>
+        <result column="processDefinitionCreate" property="processDefinitionCreate"/>
+        <result column="DEPLOY_TIME_" property="deploymentTime"/>
+        <result column="VERSION_TAG_" property="tagVersion"/>
+    </resultMap>
+
+    <select id="ProcessDefinitionQuery" resultMap="ProcessDefinition">
+        SELECT DISTINCT
+            rp.ID_,
+            rp.NAME_ processDefinitionName,
+            rp.KEY_,
+            rp.SUSPENSION_STATE_ - 2 processDefinitionDeployState,
+            user_tab.FIRST_ processDefinitionCreate,
+            rd.DEPLOY_TIME_,
+            rp.DEPLOYMENT_ID_,
+            rp.VERSION_TAG_
+        FROM
+            act_re_procdef rp
+            LEFT JOIN ( SELECT KEY_, TENANT_ID_, MAX( VERSION_ ) MAX_VERSION FROM act_re_procdef GROUP BY TENANT_ID_, KEY_ ) maxVersion ON rp.KEY_ = maxVersion.KEY_
+            LEFT JOIN ( SELECT ID_, NAME_, DEPLOY_TIME_ FROM act_re_deployment ) rd ON rp.DEPLOYMENT_ID_ = rd.ID_
+            LEFT JOIN (SELECT ID_, FIRST_ FROM act_id_user) user_tab ON rd.NAME_ = user_tab.ID_
+        WHERE
+            rp.VERSION_ = maxVersion.MAX_VERSION
+            AND (
+                rp.TENANT_ID_ = maxVersion.TENANT_ID_
+            OR ( rp.TENANT_ID_ IS NULL AND maxVersion.TENANT_ID_ IS NULL ))
+            <if test="definitionKey != null">
+                AND rp.KEY_ = #{definitionKey}
+            </if>
+            <if test="definitionName != null">
+                AND rp.NAME_ LIKE CONCAT('%',#{definitionName},'%')
+            </if>
+        ORDER BY
+            rd.DEPLOY_TIME_ DESC
+            LIMIT #{pageSize} OFFSET #{offset}
+    </select>
+
+
+    <select id="ProcessDefinitionCount" resultType="java.lang.Long">
+        SELECT
+            COUNT( DISTINCT rp.ID_ )
+        FROM
+            act_re_procdef rp
+            LEFT JOIN ( SELECT KEY_, TENANT_ID_, MAX( VERSION_ ) MAX_VERSION FROM act_re_procdef GROUP BY TENANT_ID_, KEY_ ) maxVersion ON rp.KEY_ = maxVersion.KEY_
+        WHERE
+            rp.VERSION_ = maxVersion.MAX_VERSION
+            AND (
+            rp.TENANT_ID_ = maxVersion.TENANT_ID_
+            OR ( rp.TENANT_ID_ IS NULL AND maxVersion.TENANT_ID_ IS NULL ))
+            <if test="definitionKey != null">
+                AND rp.KEY_ = #{definitionKey}
+            </if>
+            <if test="definitionName != null">
+                AND rp.NAME_ LIKE CONCAT('%',#{definitionName},'%')
+            </if>
+    </select>
+</mapper>
